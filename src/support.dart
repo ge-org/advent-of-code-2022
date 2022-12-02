@@ -9,6 +9,9 @@ Future<String> readInput(String name) async =>
 extension ParseLines on String {
   /// Splits a string into parts in places where two line breaks occur.
   List<String> readParagraphs() => split(RegExp(r'\n\n'));
+
+  /// Splits a string into parts where a line break occurs.
+  List<String> readLines() => LineSplitter().convert(this);
 }
 
 /// Functions to parse a collection of strings into separate lines.
