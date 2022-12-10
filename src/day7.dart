@@ -5,26 +5,32 @@ import 'support.dart';
 void main() async {
   final testInput = await readInput("day7_sample");
   check(part1(testInput), 95437);
+  check(part2(testInput), 24933642);
 
   final input = await readInput("day7");
   print(part1(input));
+  print(part2(input));
 }
 
-int part1(String input) {
-  final data = input.readLines().fold(<String, dynamic>{
-    "path": ["/"],
-    "dirs": {"/": 0},
-  }, (data, line) {
-    updatePath(data["path"] as List<String>, line);
-    addDir(data["dirs"], (data["path"] as List<String>).join("/"), line);
-    addFile(data, line);
-    return data;
-  });
-  return (data["dirs"] as Map<String, int>)
-      .values
-      .where((element) => element <= 100000)
-      .sum;
+int part1(String input) =>
+    getDirectorySizes(input).values.where((element) => element <= 100000).sum;
+
+int part2(String input) {
+  final dirs = getDirectorySizes(input);
+  final minSpaceToDelete = 30000000 - (70000000 - dirs["/"]!);
+  return dirs.values.where((element) => element >= minSpaceToDelete).min;
 }
+
+Map<String, int> getDirectorySizes(String input) =>
+    input.readLines().fold(<String, dynamic>{
+      "path": ["/"],
+      "dirs": {"/": 0},
+    }, (data, line) {
+      updatePath(data["path"] as List<String>, line);
+      addDir(data["dirs"], (data["path"] as List<String>).join("/"), line);
+      addFile(data, line);
+      return data;
+    })["dirs"];
 
 String? getNewDirectory(String input) {
   final index = input.indexOf("\$ cd ");
