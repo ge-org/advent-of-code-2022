@@ -81,14 +81,6 @@ List<int> getMoveDelta(String command) {
   }
 }
 
-extension Loop on int {
-  void repeat(Function f) {
-    for (var i = 0; i < this; i++) {
-      f();
-    }
-  }
-}
-
 extension Range on int {
   int coerceIn(int min, int max) {
     if (this >= min && this <= max) {

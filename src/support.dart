@@ -27,3 +27,12 @@ void check(dynamic actual, dynamic expected) {
     throw Exception("Did expect $expected but was $actual");
   }
 }
+
+extension Loop on int {
+  /// Repeats [f] [this] many times.
+  void repeat(Function f) {
+    for (var i = 0; i < this; i++) {
+      f();
+    }
+  }
+}
