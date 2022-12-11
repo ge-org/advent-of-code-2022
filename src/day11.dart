@@ -5,21 +5,40 @@ import 'support.dart';
 void main() async {
   final testInput = await readInput("day11_sample");
   check(part1(testInput), 10605);
+  check(part2(testInput), 2713310158);
 
   final input = await readInput("day11");
   print(part1(input));
+  print(part2(input));
 }
 
 int part1(String input) {
   final data = parse(input.readParagraphs());
-  20.repeat(() {
+  return getMonkeyBusiness(data, rounds: 20, shrink: (value) => value ~/ 3);
+}
+
+int part2(String input) {
+  final data = parse(input.readParagraphs());
+  /* the trick is to calculate the common multiple and then mod every level
+     by it to prevent overflowing 64bit ints. */
+  final commonMultiple = data
+      .map((monkey) => monkey["test"]["divisor"] as int)
+      .toList()
+      .multiply();
+  return getMonkeyBusiness(data,
+      rounds: 10000, shrink: (value) => value % commonMultiple);
+}
+
+int getMonkeyBusiness(List<Map<String, dynamic>> data,
+    {required int rounds, required int Function(int) shrink}) {
+  rounds.repeat(() {
     for (final monkey in data) {
       final itemsToPass = <int, List<int>>{};
       final itemsToRemove = [];
       monkey["items"].forEach((originalLevel) {
         monkey.update("inspections", (value) => (value as int) + 1);
         final newLevel =
-            applyOperation(originalLevel, monkey["operation"]) ~/ 3;
+            shrink(applyOperation(originalLevel, monkey["operation"]));
         final nextMonkey = applyTest(newLevel, monkey["test"]);
         itemsToPass.putIfAbsent(nextMonkey, () => []);
         itemsToPass[nextMonkey]!.add(newLevel);
@@ -32,12 +51,12 @@ int part1(String input) {
     }
   });
 
-  final topTwo = data
-      .map((e) => e["inspections"])
+  return data
+      .map((e) => e["inspections"] as int)
       .sorted((lhs, rhs) => rhs.compareTo(lhs))
       .take(2)
-      .toList();
-  return topTwo[0] * topTwo[1];
+      .toList()
+      .multiply();
 }
 
 List<Map<String, dynamic>> parse(List<String> input) => input.map((paragraph) {
@@ -82,5 +101,13 @@ extension Substrings on String {
     final index = indexOf(delimiter);
     if (index == -1) return null;
     return substring(index + delimiter.length);
+  }
+}
+
+extension Aggregate on List<int> {
+  int multiply() {
+    if (length == 0) return 0;
+    if (length == 1) return first;
+    return fold(1, (result, element) => result * element);
   }
 }
