@@ -4,25 +4,36 @@ import 'support.dart';
 
 void main() async {
   final testInput = await readInput("day9_sample");
-  check(part1(testInput), 13);
+  final testInput2 = await readInput("day9_sample2");
+  check(getTailMovements(testInput, numberOfKnots: 2), 13);
+  check(getTailMovements(testInput, numberOfKnots: 10), 1);
+  check(getTailMovements(testInput2, numberOfKnots: 10), 36);
 
   final input = await readInput("day9");
-  print(part1(input));
+  print(getTailMovements(input, numberOfKnots: 2));
+  print(getTailMovements(input, numberOfKnots: 10));
 }
 
-int part1(String input) =>
+int getTailMovements(String input, {required int numberOfKnots}) =>
     input.readLines().map((e) => e.split(" ")).fold(<String, dynamic>{
-      "h": [0, 0],
-      "t": [0, 0],
+      "knots": List.generate(numberOfKnots, (_) => [0, 0]),
       "log": {
         "0x0",
       },
     }, (data, inp) {
-      var command = inp[0];
       int.parse(inp[1]).repeat(() {
-        data["h"] = getHeadPosition(command, data["h"]);
-        data["t"] = getTailPosition(data["h"], data["t"]);
-        data["log"].add(data["t"].join("x"));
+        final knots = data["knots"] as List<List<int>>;
+        // move first knot of rope
+        knots[0] = getHeadPosition(inp[0], knots[0]);
+        // move each pair of knots by following the first knot
+        for (var headIndex = 0; headIndex < knots.length; headIndex++) {
+          knots.map((e) => knots.indexOf(e));
+          final tailIndex =
+              headIndex + 1 < knots.length ? headIndex + 1 : headIndex;
+          knots[tailIndex] =
+              getTailPosition(knots[headIndex], knots[tailIndex]);
+        }
+        data["log"].add(knots.last.join("x"));
       });
       return data;
     })["log"].length;
