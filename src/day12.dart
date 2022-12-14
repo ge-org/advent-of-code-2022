@@ -7,28 +7,40 @@ import 'support.dart';
 void main() async {
   final testInput = await readInput("day12_sample");
   check(part1(testInput), 31);
+  check(part2(testInput), 29);
 
   final input = await readInput("day12");
   print(part1(input));
+  print(part2(input));
 }
 
-int part1(String input) => getShortestPath(input);
+int part1(String input) {
+  final data = getData(input);
+  return getShortestPath(data, (node) => node["name"] == data["source"]);
+}
 
-int getShortestPath(String input) {
+int part2(String input) {
+  final data = getData(input);
+  return getShortestPath(data, (node) => node["w"] == 0);
+}
+
+int getShortestPath(Map data, bool Function(Map node) isDestination) {
   final seen = <String>[];
   final queue = Queue<dynamic>();
-  final data = getData(input);
 
-  queue.addFirst({"node": data["graph"][data["source"]], "d": 0});
+  /* we begin searching from the end. this makes part two easier since we do
+     not have to iterate all 'a' spots. instead we can directly find the shortest
+     path from the end to the first 'a'. */
+  queue.addFirst({"node": data["graph"][data["destination"]], "d": 0});
   while (queue.isNotEmpty) {
     final step = queue.removeFirst();
-    if (step["node"]["name"] == data["destination"]) {
+    if (isDestination(step["node"])) {
       return step["d"];
     }
 
     getNeighbors(step["node"], data)
         .where((neighbor) => !seen.contains(neighbor["name"]))
-        .where((neighbor) => (neighbor["w"] - step["node"]["w"]) <= 1)
+        .where((neighbor) => neighbor["w"] >= step["node"]["w"] - 1)
         .forEach((neighbor) {
       queue.addLast({"node": neighbor, "d": step["d"] + 1});
       seen.add(neighbor["name"]);
