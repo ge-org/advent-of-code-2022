@@ -36,3 +36,11 @@ extension Loop on int {
     }
   }
 }
+
+extension Aggregate on List<int> {
+  int multiply() {
+    if (length == 0) return 0;
+    if (length == 1) return first;
+    return fold(1, (result, element) => result * element);
+  }
+}
